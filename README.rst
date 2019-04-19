@@ -56,7 +56,7 @@ Folder Structure
   │
   ├── logging.yaml - logging configuration
   │
-  ├── data/ - default directory for storing input data
+  ├── datasets/ - default directory for storing input data
   │
   ├── experiments/ - default directory for storing configuration files
   │

@@ -39,17 +39,3 @@ def train(config_filename, resume, device):
         os.environ['CUDA_VISIBLE_DEVICES'] = device
 
     Runner().train(config, resume)
-
-
-@cli.command()
-@click.option('-r', '--resume', default=None, type=str,
-              help='path to latest checkpoint (default: None)')
-@click.option('-d', '--device', default=None, type=str,
-              help='indices of GPUs to enable (default: all)')
-def test(resume, device):
-    if resume:
-        config = torch.load(resume)['config']
-    if device:
-        os.environ["CUDA_VISIBLE_DEVICES"] = device
-
-    Runner().test(config, resume)
