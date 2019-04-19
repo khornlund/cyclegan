@@ -34,8 +34,7 @@ logging_level_dict = {
 def setup_logger(cls, verbose=0):
     logger = logging.getLogger(cls.__class__.__name__)
     if verbose not in logging_level_dict:
-        raise KeyError('verbose option {} for {} not valid. '
-                        'Valid options are {}.'.format(
-                            verbose, cls, logging_level_dict.keys()))
+        raise KeyError(f'verbose option {verbose} for {cls} not valid. '
+                       f'Valid options are {logging_level_dict.keys()}.')
     logger.setLevel(logging_level_dict[verbose])
     return logger

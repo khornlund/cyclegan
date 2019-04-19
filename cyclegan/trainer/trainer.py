@@ -26,7 +26,7 @@ class Trainer(BaseTrainer):
         acc_metrics = np.zeros(len(self.metrics))
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
-            self.writer.add_scalar('{}'.format(metric.__name__), acc_metrics[i])
+            self.writer.add_scalar(f'{metric.__name__}', acc_metrics[i])
         return acc_metrics
 
     def _train_epoch(self, epoch):
@@ -64,12 +64,8 @@ class Trainer(BaseTrainer):
             total_metrics += self._eval_metrics(output, target)
 
             if batch_idx % self.log_step == 0:
-                self.logger.debug('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                    epoch,
-                    batch_idx * self.data_loader.batch_size,
-                    self.data_loader.n_samples,
-                    100.0 * batch_idx / len(self.data_loader),
-                    loss.item()))
+                self._log_batch(epoch, batch_idx, self.data_loader.batch_size,
+                                self.data_loader.n_samples, len(self.data_loader), loss.item())
                 self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         log = {
@@ -85,6 +81,12 @@ class Trainer(BaseTrainer):
             self.lr_scheduler.step()
 
         return log
+
+    def _log_batch(self, epoch, batch_idx, batch_size, n_samples, len_data, loss):
+        n_complete = batch_idx * batch_size
+        percent = 100.0 * batch_idx / len_data
+        msg = f'Train Epoch: {epoch} [{n_complete}/{n_samples} ({percent:.0f}%)] Loss: {loss:.6f}'
+        self.logger.debug(msg)
 
     def _valid_epoch(self, epoch):
         """

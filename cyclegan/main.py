@@ -7,7 +7,7 @@ import cyclegan.model.loss as module_loss
 import cyclegan.model.metric as module_metric
 import cyclegan.model.model as module_arch
 from cyclegan.trainer import Trainer
-from temp_pr.utils import setup_logger, setup_logging
+from cyclegan.utils import setup_logger, setup_logging
 
 
 def get_instance(module, name, config, *args):
@@ -69,7 +69,7 @@ class Runner:
         loss_fn = getattr(module_loss, config['loss'])
         metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
-        logger.debug('Loading checkpoint {}'.format(resume))
+        logger.debug(f'Loading checkpoint {resume}')
         checkpoint = torch.load(resume)
         state_dict = checkpoint['state_dict']
         if config['n_gpu'] > 1:

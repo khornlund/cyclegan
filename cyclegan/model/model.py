@@ -12,7 +12,7 @@ class MnistModel(BaseModel):
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, num_classes)
-        self.logger.info('<init>: \n{}'.format(self))
+        self.logger.info(f'<init>: \n{self}')
 
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))

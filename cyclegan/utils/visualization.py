@@ -41,7 +41,7 @@ class WriterTensorboardX():
                 if add_data is not None:
                     # add mode(train/valid) tag
                     if name not in self.tag_mode_exceptions:
-                        tag = '{}/{}'.format(self.mode, tag)
+                        tag = f'{self.mode}/{tag}'
                     add_data(tag, data, self.step, *args, **kwargs)
             return wrapper
         else:
@@ -49,6 +49,5 @@ class WriterTensorboardX():
             try:
                 attr = object.__getattr__(name)
             except AttributeError:
-                raise AttributeError("type object 'WriterTensorboardX' has no attribute "
-                                     "'{}'".format(name))
+                raise AttributeError(f"type object 'WriterTensorboardX' has no attribute {name}")
             return attr

@@ -67,8 +67,8 @@ class BaseTrainer:
                                 "training will be performed on CPU.")
             n_gpu_use = 0
         if n_gpu_use > n_gpu:
-            self.logger.warning("Warning: The number of GPU\'s configured to use is {}, but only "
-                                "{} are available on this machine.".format(n_gpu_use, n_gpu))
+            self.logger.warning(f"Warning: The number of GPU\'s configured to use is {n_gpu_use}, but only "
+                                f"{n_gpu} are available on this machine.")
             n_gpu_use = n_gpu
         device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
         list_ids = list(range(n_gpu_use))
@@ -96,7 +96,7 @@ class BaseTrainer:
 
             # print logged informations to the screen
             for key, value in log.items():
-                self.logger.info('{:15s}: {}'.format(str(key), value))
+                self.logger.info(f'{str(key):15s}: {value}')
 
             # evaluate model performance according to configured metric,
             # save best checkpoint as model_best
@@ -108,8 +108,8 @@ class BaseTrainer:
                     improved = (self.mnt_mode == 'min' and log[self.mnt_metric] < self.mnt_best) or\
                                (self.mnt_mode == 'max' and log[self.mnt_metric] > self.mnt_best)
                 except KeyError:
-                    self.logger.warning("Warning: Metric '{}' is not found. Model performance "
-                                        "monitoring is disabled.".format(self.mnt_metric))
+                    self.logger.warning(f"Warning: Metric '{self.mnt_metric}' is not found. Model "
+                                        "performance monitoring is disabled.")
                     self.mnt_mode = 'off'
                     improved = False
                     not_improved_count = 0
@@ -122,8 +122,8 @@ class BaseTrainer:
                     not_improved_count += 1
 
                 if not_improved_count > self.early_stop:
-                    self.logger.info("Validation performance didn\'t improve for {} epochs. "
-                                     "Training stops.".format(self.early_stop))
+                    self.logger.info(f"Validation performance didn\'t improve for {self.early_stop} "
+                                     "epochs. Training stops.")
                     break
 
             if epoch % self.save_period == 0:
@@ -154,13 +154,13 @@ class BaseTrainer:
             'monitor_best': self.mnt_best,
             'config': self.config
         }
-        filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth'.format(epoch))
+        filename = os.path.join(self.checkpoint_dir, f'checkpoint-epoch{epoch}.pth')
         torch.save(state, filename)
-        self.logger.info("Saving checkpoint: {} ...".format(filename))
+        self.logger.info(f"Saving checkpoint: {filename} ...")
         if save_best:
             best_path = os.path.join(self.checkpoint_dir, 'model_best.pth')
             torch.save(state, best_path)
-            self.logger.info("Saving current best: {} ...".format('model_best.pth'))
+            self.logger.info(f'Saving current best: {best_path}')
 
     def _resume_checkpoint(self, resume_path):
         """
@@ -168,7 +168,7 @@ class BaseTrainer:
 
         :param resume_path: Checkpoint path to be resumed
         """
-        self.logger.info("Loading checkpoint: {} ...".format(resume_path))
+        self.logger.info(f'Loading checkpoint: {resume_path}')
         checkpoint = torch.load(resume_path)
         self.start_epoch = checkpoint['epoch'] + 1
         self.mnt_best = checkpoint['monitor_best']
@@ -187,4 +187,4 @@ class BaseTrainer:
         else:
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
+        self.logger.info(f'Checkpoint "{resume_path}" (epoch {self.start_epoch}) loaded')
