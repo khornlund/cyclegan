@@ -2,7 +2,9 @@ version: 1
 disable_existing_loggers: False
 formatters:
     simple:
-        format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        format: "%(name)s : %(message)s"
+    timestamp:
+        format: "%(asctime)s - %(name)s - %(levelname)s : %(message)s"
 
 handlers:
     console:
@@ -14,7 +16,7 @@ handlers:
     info_file_handler:
         class: logging.handlers.RotatingFileHandler
         level: INFO
-        formatter: simple
+        formatter: timestamp
         filename: info.log
         maxBytes: 10485760 # 10MB
         backupCount: 20
@@ -23,7 +25,7 @@ handlers:
     error_file_handler:
         class: logging.handlers.RotatingFileHandler
         level: ERROR
-        formatter: simple
+        formatter: timestamp
         filename: errors.log
         maxBytes: 10485760 # 10MB
         backupCount: 20

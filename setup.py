@@ -20,6 +20,7 @@ requirements = [
     'click',
     'pytest',
     'jupyter',
+    'tensorflow',
     'tensorboard',
     'tensorboardX',
     'pyyaml'

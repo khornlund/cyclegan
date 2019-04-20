@@ -132,9 +132,13 @@ class CycleGanTrainer(BaseTrainer):
                 'loss_D': (loss_D_A + loss_D_B)
             }
 
+            self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
+            for loss_type, loss in losses.items():
+                self.writer.add_scalar(loss_type, loss)
+
             if batch_idx % self.log_step == 0:
                 self._log_batch(epoch, batch_idx, self.data_loader.batch_size,
-                                self.data_loader.n_samples, len(self.data_loader), losses)
+                                len(self.data_loader), losses)
 
         self.lr_scheduler.G.step()
         self.lr_scheduler.D_A.step()
@@ -142,11 +146,12 @@ class CycleGanTrainer(BaseTrainer):
 
         return losses
 
-    def _log_batch(self, epoch, batch_idx, batch_size, n_samples, len_data, losses):
+    def _log_batch(self, epoch, batch_idx, batch_size, n_batches, losses):
             n_complete = batch_idx * batch_size
-            percent = 100.0 * batch_idx / len_data
-            msg = f'Train Epoch: {epoch} [{n_complete}/{n_samples} ({percent:.0f}%)]'
-            msg += ' | '.join([f'{key}: {val:.6f}' for key, val in losses.items()])
+            n_samples = n_batches * batch_size
+            percent = 100.0 * n_complete / n_samples
+            msg = f'Train Epoch: {epoch} [{n_complete}/{n_samples} ({percent:.0f}%)] '
+            msg += ' | '.join([f'{key}: {val:.4f}' for key, val in losses.items()])
             self.logger.debug(msg)
 
 class ReplayBuffer():

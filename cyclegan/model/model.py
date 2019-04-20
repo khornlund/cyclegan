@@ -17,7 +17,7 @@ class ResidualBlock(BaseModel):
                       nn.InstanceNorm2d(in_features)]
 
         self.conv_block = nn.Sequential(*conv_block)
-        self.logger.info('<init>: \n{self}')
+        self.logger.info(f'<init>: \n{self}')
 
     def forward(self, x):
         return x + self.conv_block(x)
@@ -63,7 +63,7 @@ class Generator(BaseModel):
                   nn.Tanh()]
 
         self.model = nn.Sequential(*model)
-        self.logger.info('<init>: \n{self}')
+        self.logger.info(f'<init>: \n{self}')
 
     def forward(self, x):
         return self.model(x)
@@ -101,7 +101,7 @@ class Discriminator(BaseModel):
         model += [nn.Conv2d(512, 1, 4, padding=1)]
 
         self.model = nn.Sequential(*model)
-        self.logger.info('<init>: \n{self}')
+        self.logger.info(f'<init>: \n{self}')
 
     def forward(self, x):
         x = self.model(x)
