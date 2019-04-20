@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 from torch.autograd import Variable
+from torchvision.utils import make_grid
 
 from cyclegan.base import BaseTrainer
 
@@ -135,6 +136,10 @@ class CycleGanTrainer(BaseTrainer):
             self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
             for loss_type, loss in losses.items():
                 self.writer.add_scalar(loss_type, loss)
+            self.writer.add_image('Real_A', make_grid(real_A))
+            self.writer.add_image('Real_B', make_grid(real_B))
+            self.writer.add_image('Fake_A', make_grid(fake_A))
+            self.writer.add_image('Fake_B', make_grid(fake_B))
 
             if batch_idx % self.log_step == 0:
                 self._log_batch(epoch, batch_idx, self.data_loader.batch_size,

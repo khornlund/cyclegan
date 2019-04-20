@@ -18,7 +18,8 @@ class Apples2OrangesDataLoader(BaseDataLoader):
             transforms.RandomCrop(img_size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ]
 
         self.dataset = ImageDataset(data_dir, transforms_=transforms_, unaligned=True)
 
