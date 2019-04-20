@@ -10,11 +10,12 @@ arch:
     verbose: 2
 
 data_loader:
-  type: Apples2OrangesDataLoader
+  type: BerkelyDataLoader
   args:
     batch_size: 2
     img_size: 256
-    data_dir: datasets/apple2orange/
+    data_dir: datasets/
+    dataset: summer2winter_yosemite
     num_workers: 0
     shuffle: true
     validation_split: 0.0
