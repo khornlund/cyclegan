@@ -15,7 +15,7 @@ data_loader:
     batch_size: 2
     img_size: 256
     data_dir: datasets/
-    dataset: summer2winter_yosemite
+    dataset: horse2zebra
     num_workers: 0
     shuffle: true
     validation_split: 0.0
