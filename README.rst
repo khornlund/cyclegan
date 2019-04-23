@@ -13,22 +13,17 @@ Requirements
 
 Features
 ========
-* Clear folder structure which is suitable for many deep learning projects.
 * `.yaml` config file support for more convenient parameter tuning.
 * Checkpoint saving and resuming.
-* Abstract base classes for faster development:
-  * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
-  * `BaseDataLoader` handles batch generation, data shuffling, and validation data splitting.
-  * `BaseModel` provides basic model summary.
 
 Folder Structure
 ================
 
 ::
 
-  cookiecutter-pytorch/
+  cyclegan/
   │
-  ├── <project name>/
+  ├── cyclegan/
   │    │
   │    ├── cli.py - command line interface
   │    ├── main.py - main script to start train/test
@@ -41,10 +36,11 @@ Folder Structure
   │    ├── data_loader/ - anything about data loading goes here
   │    │   └── data_loaders.py
   │    │
-  │    ├── model/ - models, losses, and metrics
+  │    ├── model/ - models, losses, optimizers, and schedulers
   │    │   ├── loss.py
-  │    │   ├── metric.py
-  │    │   └── model.py
+  │    │   ├── model.py
+  │    │   ├── optimizer.py
+  │    │   └── scheduler.py
   │    │
   │    ├── trainer/ - trainers
   │    │   └── trainer.py
@@ -70,17 +66,12 @@ Usage
 
 .. code-block:: bash
 
+  $ cd path/to/repo
   $ conda create --name <name> python=3.6
   $ pip install -e .
   $ conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
+  $ cyclegan train -c experiments/config.yaml
 
-The code in this repo is an MNIST example of the template. You can run the tests,
-and the example project using:
-
-.. code-block:: bash
-
-  $ pytest tests
-  $ project name train -c experiments/config.yaml
 
 Config file format
 ------------------
