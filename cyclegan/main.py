@@ -60,23 +60,15 @@ class Runner:
             logger.warning("Warning: Architecture configuration given in config file is "
                            "different from that of checkpoint. This may yield an exception "
                            "while state_dict is being loaded.")
-        model.G_A2B.load_state_dict(checkpoint['generator_A2B'])
-        model.G_B2A.load_state_dict(checkpoint['generator_B2A'])
-        model.D_A.load_state_dict(checkpoint['discriminator_A'])
-        model.D_B.load_state_dict(checkpoint['discriminator_B'])
+        model.load_state_dict(checkpoint)
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model.to(device)
         model.eval()
 
         bs = config['data_loader']['args']['batch_size']
-        input_nc  = config['arch']['args']['input_nc']
-        output_nc = config['arch']['args']['output_nc']
-        x_size = 256
-        y_size = 256
-
-        input_A = torch.cuda.FloatTensor(bs, input_nc, x_size, y_size)
-        input_B = torch.cuda.FloatTensor(bs, output_nc, x_size, y_size)
+        input_A = model.get_input_A(bs)
+        input_B = model.get_input_B(bs)
 
         out_a, out_b = test_paths(config)
 
@@ -93,7 +85,7 @@ class Runner:
                 save_image(fake_A, out_a + '/%04d.png' % (batch_idx+1))
                 save_image(fake_B, out_b + '/%04d.png' % (batch_idx+1))
 
-                logger.info('\rGenerated images %04d of %04d' % (batch_idx+1, len(data_loader)))
+                logger.info('Generated images %04d of %04d' % (batch_idx+1, len(data_loader)))
 
         logger.info(f'Finished writing to "{out_a}" and "{out_b}".')
 

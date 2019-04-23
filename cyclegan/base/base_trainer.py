@@ -19,8 +19,7 @@ class BaseTrainer:
 
         # setup GPU device if available, move model into configured device
         self.device, _ = self._prepare_device(config['n_gpu'])
-        self.model = model
-        self.model.to(self.device)
+        self.model = model.to(self.device)
 
         self.loss = loss
         self.metrics = metrics
@@ -109,15 +108,10 @@ class BaseTrainer:
         state = {
             'arch': arch,
             'epoch': epoch,
-            'generator_A2B': self.model.G_A2B.state_dict(),
-            'generator_B2A': self.model.G_B2A.state_dict(),
-            'discriminator_A': self.model.D_A.state_dict(),
-            'discriminator_B': self.model.D_B.state_dict(),
-            'optimizer_G': self.optimizer.G.state_dict(),
-            'optimizer_D_A': self.optimizer.D_A.state_dict(),
-            'optimizer_D_B': self.optimizer.D_B.state_dict(),
             'config': self.config
         }
+        state.update(self.model.state_dict())
+        state.update(self.optimizer.state_dict())
         filename = os.path.join(self.checkpoint_dir, f'checkpoint-epoch{epoch}.pth')
         torch.save(state, filename)
         self.logger.info(f"Saving checkpoint: {filename} ...")
@@ -137,18 +131,13 @@ class BaseTrainer:
             self.logger.warning("Warning: Architecture configuration given in config file is "
                                 "different from that of checkpoint. This may yield an exception "
                                 "while state_dict is being loaded.")
-        self.model.G_A2B.load_state_dict(checkpoint['generator_A2B'])
-        self.model.G_B2A.load_state_dict(checkpoint['generator_B2A'])
-        self.model.D_A.load_state_dict(checkpoint['discriminator_A'])
-        self.model.D_B.load_state_dict(checkpoint['discriminator_B'])
+        self.model.load_state_dict(checkpoint)
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if checkpoint['config']['optimizer']['type'] != self.config['optimizer']['type']:
             self.logger.warning("Warning: Optimizer type given in config file is different from "
                                 "that of checkpoint. Optimizer parameters not being resumed.")
         else:
-            self.optimizer.G.load_state_dict(checkpoint['optimizer_G'])
-            self.optimizer.D_A.load_state_dict(checkpoint['optimizer_D_A'])
-            self.optimizer.D_B.load_state_dict(checkpoint['optimizer_D_B'])
+            self.optimizer.load_state_dict(checkpoint)
 
-        self.logger.info(f"Checkpoint '{resume_path}' (epoch {start_epoch}) loaded")
+        self.logger.info(f"Checkpoint '{resume_path}' (epoch {self.start_epoch}) loaded")

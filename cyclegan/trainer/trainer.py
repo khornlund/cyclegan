@@ -21,18 +21,14 @@ class CycleGanTrainer(BaseTrainer):
         self.log_step = int(np.sqrt(len(data_loader)))
 
         bs = config['data_loader']['args']['batch_size']
-        input_nc  = config['arch']['args']['input_nc']
-        output_nc = config['arch']['args']['output_nc']
-        x_size = 256
-        y_size = 256
 
         self.loss_weight_identity = config['training']['loss_weight']['identity']
         self.loss_weight_cycle    = config['training']['loss_weight']['cycle']
 
-        self.input_A = torch.cuda.FloatTensor(bs, input_nc, x_size, y_size)
-        self.input_B = torch.cuda.FloatTensor(bs, output_nc, x_size, y_size)
-        self.target_real = Variable(torch.cuda.FloatTensor(bs).fill_(1.0), requires_grad=False)
-        self.target_fake = Variable(torch.cuda.FloatTensor(bs).fill_(0.0), requires_grad=False)
+        self.input_A = model.get_input_A(bs)
+        self.input_B = model.get_input_B(bs)
+        self.target_real = model.get_target(bs)
+        self.target_fake = model.get_target(bs)
 
         self.fake_A_buffer = ReplayBuffer()
         self.fake_B_buffer = ReplayBuffer()
@@ -40,16 +36,6 @@ class CycleGanTrainer(BaseTrainer):
     def _train_epoch(self, epoch):
         """
         Training logic for an epoch
-
-        :param epoch: Current training epoch.
-        :return: A log that contains all information you want to save.
-
-        Note:
-            If you have additional information to record, for example:
-                > additional_log = {"x": x, "y": y}
-            merge it with log before return. i.e.
-                > log = {**log, **additional_log}
-                > return log
         """
         for batch_idx, batch in enumerate(self.data_loader):
             # Set model input

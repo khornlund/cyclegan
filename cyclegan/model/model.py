@@ -1,7 +1,9 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 
-from cyclegan.base.base_model import BaseModel
+from cyclegan.base import BaseModel
 
 
 class ResidualBlock(BaseModel):
@@ -132,7 +134,11 @@ class CycleGan:
     @property
     def D_B(self): return self.netD_B
 
-    def __init__(self, input_nc, output_nc, verbose):
+    def __init__(self, input_nc, output_nc, img_size, verbose):
+        self.input_nc = input_nc
+        self.output_nc = output_nc
+        self.img_size = img_size
+
         self.netG_A2B = GeneratorA2B(input_nc, output_nc, verbose=verbose)
         self.netG_B2A = GeneratorB2A(output_nc, input_nc, verbose=verbose)
         self.netD_A = DiscriminatorA(input_nc, verbose=verbose)
@@ -148,10 +154,27 @@ class CycleGan:
         return [self.G_A2B, self.G_B2A, self.D_A, self.D_B]
 
     def to(self, device):
-        [model.to(device) for model in self._models]
+        [m.to(device) for m in self._models]
+        return self
 
     def eval(self):
-        [model.eval() for model in self._models]
+        [m.eval() for m in self._models]
+
+    def state_dict(self):
+        return {m.__class__.__name__: m.state_dict() for m in self._models}
+
+    def load_state_dict(self, checkpoint):
+        for m in self._models:
+            m.load_state_dict(checkpoint[m.__class__.__name__])
+
+    def get_input_A(self, batch_size):
+        return torch.cuda.FloatTensor(batch_size, self.input_nc, self.img_size, self.img_size)
+
+    def get_input_B(self, batch_size):
+        return torch.cuda.FloatTensor(batch_size, self.output_nc, self.img_size, self.img_size)
+
+    def get_target(self, batch_size):
+        return Variable(torch.cuda.FloatTensor(batch_size).fill_(1.0), requires_grad=False)
 
 
 def weights_init_normal(m):

@@ -7,6 +7,7 @@ arch:
   args:
     input_nc: 3
     output_nc: 3
+    img_size: 256
     verbose: 2
 
 data_loader:

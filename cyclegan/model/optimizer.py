@@ -23,6 +23,17 @@ class CycleGanOptimizer:
     @property
     def D_B(self): return self._D_B
 
+    @property
+    def _models(self):
+        return {'G': self.G, 'D_A': self.D_A, 'D_B': self.D_B}
+
+    def state_dict(self):
+        return {name: model.state_dict() for name, model in self._models.items()}
+
+    def load_state_dict(self, checkpoint):
+        for name, model in self._models.items():
+            model.load_state_dict(checkpoint[name])
+
     def __str__(self):
         return f'Optimizers:\n\tG: {self.G}\n\tD_A: {self.D_A}\n\tD_B: {self.D_B}'
 
