@@ -16,14 +16,18 @@ class CycleGanTrainer(BaseTrainer):
         super(CycleGanTrainer, self).__init__(model, loss, [], optimizer, resume, config)
         self.config = config
         self.data_loader = data_loader
+        self.invert_norm_transform = data_loader.invert_norm_transform()
         self.lr_scheduler = lr_scheduler
-        self.log_step = int(np.sqrt(data_loader.batch_size))
+        self.log_step = int(np.sqrt(len(data_loader)))
 
         bs = config['data_loader']['args']['batch_size']
         input_nc  = config['arch']['args']['input_nc']
         output_nc = config['arch']['args']['output_nc']
         x_size = 256
         y_size = 256
+
+        self.loss_weight_identity = config['training']['loss_weight']['identity']
+        self.loss_weight_cycle    = config['training']['loss_weight']['cycle']
 
         self.input_A = torch.cuda.FloatTensor(bs, input_nc, x_size, y_size)
         self.input_B = torch.cuda.FloatTensor(bs, output_nc, x_size, y_size)
@@ -58,10 +62,10 @@ class CycleGanTrainer(BaseTrainer):
             # Identity loss
             # G_A2B(B) should equal B if real B is fed
             same_B = self.model.G_A2B(real_B)
-            loss_identity_B = self.loss.identity(same_B, real_B) * 5.0
+            loss_identity_B = self.loss.identity(same_B, real_B) * self.loss_weight_identity
             # G_B2A(A) should equal A if real A is fed
             same_A = self.model.G_B2A(real_A)
-            loss_identity_A = self.loss.identity(same_A, real_A) * 5.0
+            loss_identity_A = self.loss.identity(same_A, real_A) * self.loss_weight_identity
 
             # GAN loss
             fake_B = self.model.G_A2B(real_A)
@@ -74,10 +78,10 @@ class CycleGanTrainer(BaseTrainer):
 
             # Cycle loss
             recovered_A = self.model.G_B2A(fake_B)
-            loss_cycle_ABA = self.loss.cycle(recovered_A, real_A) * 10.0
+            loss_cycle_ABA = self.loss.cycle(recovered_A, real_A) * self.loss_weight_cycle
 
             recovered_B = self.model.G_A2B(fake_A)
-            loss_cycle_BAB = self.loss.cycle(recovered_B, real_B) * 10.0
+            loss_cycle_BAB = self.loss.cycle(recovered_B, real_B) * self.loss_weight_cycle
 
             # Total loss
             loss_G = (loss_identity_A + loss_identity_B + loss_GAN_A2B +
@@ -133,17 +137,17 @@ class CycleGanTrainer(BaseTrainer):
                 'loss_D': (loss_D_A + loss_D_B)
             }
 
-            self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
-            for loss_type, loss in losses.items():
-                self.writer.add_scalar(loss_type, loss)
-            self.writer.add_image('Real_A', make_grid(real_A))
-            self.writer.add_image('Real_B', make_grid(real_B))
-            self.writer.add_image('Fake_A', make_grid(fake_A))
-            self.writer.add_image('Fake_B', make_grid(fake_B))
-
             if batch_idx % self.log_step == 0:
                 self._log_batch(epoch, batch_idx, self.data_loader.batch_size,
                                 len(self.data_loader), losses)
+
+                self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
+                for loss_type, loss in losses.items():
+                    self.writer.add_scalar(loss_type, loss)
+                self.writer.add_image('AtoB/Real_A', make_grid(real_A, normalize=True))
+                self.writer.add_image('AtoB/Fake_B', make_grid(fake_B, normalize=True))
+                self.writer.add_image('BtoA/Real_B', make_grid(real_B, normalize=True))
+                self.writer.add_image('BtoA/Fake_A', make_grid(fake_A, normalize=True))
 
         self.lr_scheduler.G.step()
         self.lr_scheduler.D_A.step()

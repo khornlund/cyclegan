@@ -15,8 +15,8 @@ data_loader:
     batch_size: 2
     img_size: 256
     data_dir: datasets/
-    dataset: summer2winter_yosemite
-    num_workers: 0
+    dataset: apple2orange
+    num_workers: 2
     shuffle: true
     validation_split: 0.0
 
@@ -31,6 +31,9 @@ optimizer:
 lr_scheduler: CycleGanScheduler
 
 training:
+  loss_weight:
+    identity: 5
+    cycle: 10
   early_stop: 10
   epochs: 200
   save_period: 1

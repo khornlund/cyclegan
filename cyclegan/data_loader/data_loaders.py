@@ -27,6 +27,9 @@ class BerkelyDataLoader(BaseDataLoader):
         'ae_photo'
     ]
 
+    norm_mus  = [0.5, 0.5, 0.5]
+    norm_stds = [0.5, 0.5, 0.5]
+
     def __init__(self, data_dir, dataset, batch_size, img_size, shuffle, validation_split,
                  num_workers, training=True):
         transforms_ = [
@@ -34,7 +37,7 @@ class BerkelyDataLoader(BaseDataLoader):
             transforms.RandomCrop(img_size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize(self.norm_mus, self.norm_stds)
         ]
         data_f = os.path.join(data_dir, dataset)
         if not os.path.exists(data_f):
@@ -43,6 +46,13 @@ class BerkelyDataLoader(BaseDataLoader):
 
         super(BerkelyDataLoader, self).__init__(
             self.dataset, batch_size, shuffle, validation_split, num_workers)
+
+    def invert_norm_transform(self):
+        inv = transforms.Compose([
+            transforms.Normalize([0., 0., 0.], [1/std for std in self.norm_stds]),
+            transforms.Normalize([-mu for mu in self.norm_mus], [1., 1., 1.])
+        ])
+        return inv
 
     def download_dataset(self, dataset):
         if dataset not in self.options:
