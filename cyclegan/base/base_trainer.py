@@ -20,10 +20,7 @@ class BaseTrainer:
         # setup GPU device if available, move model into configured device
         self.device, _ = self._prepare_device(config['n_gpu'])
         self.model = model
-        self.model.G_A2B.to(self.device)
-        self.model.G_B2A.to(self.device)
-        self.model.D_A.to(self.device)
-        self.model.D_B.to(self.device)
+        self.model.to(self.device)
 
         self.loss = loss
         self.metrics = metrics

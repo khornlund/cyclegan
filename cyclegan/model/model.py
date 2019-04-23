@@ -132,12 +132,6 @@ class CycleGan:
     @property
     def D_B(self): return self.netD_B
 
-    def load(self, G_A2B, G_B2A, D_A, D_B):
-        self.netG_A2B = G_A2B
-        self.netG_B2A = G_B2A
-        self.netD_A = D_A
-        self.netD_B = D_B
-
     def __init__(self, input_nc, output_nc, verbose):
         self.netG_A2B = GeneratorA2B(input_nc, output_nc, verbose=verbose)
         self.netG_B2A = GeneratorB2A(output_nc, input_nc, verbose=verbose)
@@ -148,6 +142,16 @@ class CycleGan:
         self.netG_B2A.apply(weights_init_normal)
         self.netD_A.apply(weights_init_normal)
         self.netD_B.apply(weights_init_normal)
+
+    @property
+    def _models(self):
+        return [self.G_A2B, self.G_B2A, self.D_A, self.D_B]
+
+    def to(self, device):
+        [model.to(device) for model in self._models]
+
+    def eval(self):
+        [model.eval() for model in self._models]
 
 
 def weights_init_normal(m):

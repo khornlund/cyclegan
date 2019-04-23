@@ -163,6 +163,7 @@ class CycleGanTrainer(BaseTrainer):
             msg += ' | '.join([f'{key}: {val:.4f}' for key, val in losses.items()])
             self.logger.debug(msg)
 
+
 class ReplayBuffer():
     def __init__(self, max_size=50):
         assert (max_size > 0), 'Empty buffer or trying to create a black hole. Be careful.'
