@@ -10,7 +10,7 @@ from PIL import Image
 from cyclegan.base import BaseDataLoader
 
 
-class BerkelyDataLoader(BaseDataLoader):
+class BerkeleyDataLoader(BaseDataLoader):
 
     options = [
         'apple2orange',
@@ -44,7 +44,7 @@ class BerkelyDataLoader(BaseDataLoader):
             self.download_dataset(dataset)
         self.dataset = ImageDataset(data_f, transforms_=transforms_, unaligned=True)
 
-        super(BerkelyDataLoader, self).__init__(
+        super(BerkeleyDataLoader, self).__init__(
             self.dataset, batch_size, shuffle, validation_split, num_workers)
 
     def invert_norm_transform(self):
