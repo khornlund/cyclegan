@@ -26,17 +26,17 @@ class ResidualBlock(BaseModel):
 
 
 class Generator(BaseModel):
-    def __init__(self, input_nc, output_nc, n_residual_blocks=9, verbose=0):
+    def __init__(self, input_nc, output_nc, ks=7, nf=64, n_residual_blocks=9, verbose=0):
         super(Generator, self).__init__(verbose=verbose)
 
         # Initial convolution block
         model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, 64, 7),
-                 nn.InstanceNorm2d(64),
+                 nn.Conv2d(input_nc, nf, ks),
+                 nn.InstanceNorm2d(nf),
                  nn.ReLU(inplace=True)]
 
         # Downsampling
-        in_features = 64
+        in_features = nf
         out_features = in_features * 2
         for _ in range(2):
             model += [nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
@@ -61,7 +61,7 @@ class Generator(BaseModel):
 
         # Output layer
         model += [nn.ReflectionPad2d(3),
-                  nn.Conv2d(64, output_nc, 7),
+                  nn.Conv2d(nf, output_nc, ks),
                   nn.Tanh()]
 
         self.model = nn.Sequential(*model)
@@ -80,27 +80,40 @@ class GeneratorB2A(Generator):
 
 
 class Discriminator(BaseModel):
-    def __init__(self, input_nc, verbose=0):
+    """
+    Parameters
+    ----------
+    input_nc : int
+        Number of input channels. Eg. 3 for RGB, 1 for Greyscale.
+
+    ks : int
+        Kernel size.
+
+    nf : int
+        The number of features in the first layer. Will be doubled at each
+        consecutive layer.
+
+    nl : int
+        The number of convolutional layers in the network. Must be >= 2.
+
+    verbose : int
+        Logging verbosity.
+    """
+
+    def __init__(self, input_nc, ks=4, nf=64, nl=5, verbose=0):
         super(Discriminator, self).__init__(verbose=verbose)
 
         # A bunch of convolutions one after another
-        model = [nn.Conv2d(input_nc, 64, 4, stride=2, padding=1),
+        model = [nn.Conv2d(input_nc, nf, ks, stride=2, padding=1),
                  nn.LeakyReLU(0.2, inplace=True)]
 
-        model += [nn.Conv2d(64, 128, 4, stride=2, padding=1),
-                  nn.InstanceNorm2d(128),
-                  nn.LeakyReLU(0.2, inplace=True)]
-
-        model += [nn.Conv2d(128, 256, 4, stride=2, padding=1),
-                  nn.InstanceNorm2d(256),
-                  nn.LeakyReLU(0.2, inplace=True)]
-
-        model += [nn.Conv2d(256, 512, 4, padding=1),
-                  nn.InstanceNorm2d(512),
-                  nn.LeakyReLU(0.2, inplace=True)]
+        for x in [nf * 2 ** i for i in range(nl-2)]:
+            model += [nn.Conv2d(x, x * 2, ks, stride=2, padding=1),
+                      nn.InstanceNorm2d(x * 2),
+                      nn.LeakyReLU(0.2, inplace=True)]
 
         # FCN classification layer
-        model += [nn.Conv2d(512, 1, 4, padding=1)]
+        model += [nn.Conv2d(nf * 2 ** (nl-2), 1, ks, padding=1)]
 
         self.model = nn.Sequential(*model)
         self.logger.info(f'<init>: \n{self}')
@@ -134,15 +147,15 @@ class CycleGan:
     @property
     def D_B(self): return self.netD_B
 
-    def __init__(self, input_nc, output_nc, img_size, verbose):
+    def __init__(self, input_nc, output_nc, gnf, gks, dnf, dnl, dks, img_size, verbose):
         self.input_nc = input_nc
         self.output_nc = output_nc
         self.img_size = img_size
 
-        self.netG_A2B = GeneratorA2B(input_nc, output_nc, verbose=verbose)
-        self.netG_B2A = GeneratorB2A(output_nc, input_nc, verbose=verbose)
-        self.netD_A = DiscriminatorA(input_nc, verbose=verbose)
-        self.netD_B = DiscriminatorB(output_nc, verbose=verbose)
+        self.netG_A2B = GeneratorA2B(input_nc, output_nc, ks=gks, nf=gnf, verbose=verbose)
+        self.netG_B2A = GeneratorB2A(output_nc, input_nc, ks=gks, nf=gnf, verbose=verbose)
+        self.netD_A = DiscriminatorA(input_nc, ks=dks, nf=dnf, nl=dnl, verbose=verbose)
+        self.netD_B = DiscriminatorB(output_nc, ks=dks, nf=dnf, nl=dnl, verbose=verbose)
 
         self.netG_A2B.apply(weights_init_normal)
         self.netG_B2A.apply(weights_init_normal)

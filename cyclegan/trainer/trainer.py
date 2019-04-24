@@ -16,7 +16,6 @@ class CycleGanTrainer(BaseTrainer):
         super(CycleGanTrainer, self).__init__(model, loss, [], optimizer, resume, config)
         self.config = config
         self.data_loader = data_loader
-        self.invert_norm_transform = data_loader.invert_norm_transform()
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(len(data_loader)))
 
@@ -77,6 +76,13 @@ class CycleGanTrainer(BaseTrainer):
             self.optimizer.G.step()
             # -----------------------------------------------------------------
 
+            if batch_idx % self.log_step == 0:
+                self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
+                self.writer.add_image('AtoB/Real_A', make_grid(real_A, normalize=True))
+                self.writer.add_image('AtoB/Fake_B', make_grid(fake_B, normalize=True))
+                self.writer.add_image('BtoA/Real_B', make_grid(real_B, normalize=True))
+                self.writer.add_image('BtoA/Fake_A', make_grid(fake_A, normalize=True))
+
             # -- Discriminator A ----------------------------------------------
             self.optimizer.D_A.zero_grad()
 
@@ -126,14 +132,8 @@ class CycleGanTrainer(BaseTrainer):
             if batch_idx % self.log_step == 0:
                 self._log_batch(epoch, batch_idx, self.data_loader.batch_size,
                                 len(self.data_loader), losses)
-
-                self.writer.set_step((epoch - 1) * len(self.data_loader) + batch_idx)
                 for loss_type, loss in losses.items():
                     self.writer.add_scalar(loss_type, loss)
-                self.writer.add_image('AtoB/Real_A', make_grid(real_A, normalize=True))
-                self.writer.add_image('AtoB/Fake_B', make_grid(fake_B, normalize=True))
-                self.writer.add_image('BtoA/Real_B', make_grid(real_B, normalize=True))
-                self.writer.add_image('BtoA/Fake_A', make_grid(fake_A, normalize=True))
 
         self.lr_scheduler.G.step()
         self.lr_scheduler.D_A.step()

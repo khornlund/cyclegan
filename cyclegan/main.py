@@ -88,6 +88,3 @@ class Runner:
                 logger.info('Generated images %04d of %04d' % (batch_idx+1, len(data_loader)))
 
         logger.info(f'Finished writing to "{out_a}" and "{out_b}".')
-
-
-

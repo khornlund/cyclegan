@@ -5,10 +5,15 @@ save_dir: saved/
 arch:
   type: CycleGan
   args:
-    input_nc: 3
-    output_nc: 3
-    img_size: 256
-    verbose: 2
+    input_nc: 3          # n input channels. 3: RGB, 1: Greyscale
+    output_nc: 3         # n output channels
+    img_size: 256        # image size (assumed square)
+    dnf: 64              # number of features in first discriminator conv. layer
+    gnf: 64              # number of features in last generator conv. layer
+    dnl: 5               # number of conv. layers in discriminator
+    dks: 4               # discriminator conv. kernel size
+    gks: 7               # generator conv. kernel size
+    verbose: 2           # logging verbosity
 
 data_loader:
   type: BerkeleyDataLoader

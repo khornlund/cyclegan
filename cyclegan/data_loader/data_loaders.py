@@ -47,13 +47,6 @@ class BerkeleyDataLoader(BaseDataLoader):
         super(BerkeleyDataLoader, self).__init__(
             self.dataset, batch_size, shuffle, validation_split, num_workers)
 
-    def invert_norm_transform(self):
-        inv = transforms.Compose([
-            transforms.Normalize([0., 0., 0.], [1/std for std in self.norm_stds]),
-            transforms.Normalize([-mu for mu in self.norm_mus], [1., 1., 1.])
-        ])
-        return inv
-
     def download_dataset(self, dataset):
         if dataset not in self.options:
             raise Exception(f'{dataset} is not a valid dataset. Options are {self.options}')
