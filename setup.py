@@ -33,7 +33,7 @@ setup(
     license='MIT',
     author="Karl Hornlund",
     author_email="karlhornlund@gmail.com",
-    description="Short description",
+    description="PyTorch implementation of paper: https://arxiv.org/abs/1703.10593",
     long_description=read("README.rst"),
     packages=find_packages(exclude=('tests',)),
     entry_points={
