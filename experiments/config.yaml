@@ -12,7 +12,8 @@ arch:
     gnf: 64              # number of features in last generator conv. layer
     dnl: 5               # number of conv. layers in discriminator
     dks: 4               # discriminator conv. kernel size
-    gks: 7               # generator conv. kernel size
+    gks1: 7              # generator outer layer conv. kernel size
+    gks2: 3              # generator inner layer conv. kernel size
     verbose: 2           # logging verbosity
 
 data_loader:
@@ -22,7 +23,7 @@ data_loader:
     img_size: 256
     data_dir: datasets/
     dataset: summer2winter_yosemite
-    num_workers: 2
+    num_workers: 0
     shuffle: true
     validation_split: 0.0
 

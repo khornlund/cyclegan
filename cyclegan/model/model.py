@@ -35,25 +35,28 @@ class Generator(BaseModel):
     output_nc : int
         Number of output channels
 
-    ks : int
-        Convolutional kernel size.
+    ks1 : int
+        Outer layer conv. kernel size.
+
+    ks2 : int
+        Inner layer conv. kernel size.
 
     nf : int
         Number of features in last convolutional layer.
 
-    n_residual_blocks : int
+    n_res_blocks : int
         Number of :class:`ResidualBlock`s in the middle of network.
 
     verbose : int
         Logging verbosity.
     """
 
-    def __init__(self, input_nc, output_nc, ks=7, nf=64, n_residual_blocks=9, verbose=0):
+    def __init__(self, input_nc, output_nc, ks1, ks2, nf, n_res_blocks=9, verbose=0):
         super(Generator, self).__init__(verbose=verbose)
 
         # Initial convolution block
         model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, nf, ks),
+                 nn.Conv2d(input_nc, nf, ks1),
                  nn.InstanceNorm2d(nf),
                  nn.ReLU(inplace=True)]
 
@@ -61,20 +64,20 @@ class Generator(BaseModel):
         in_features = nf
         out_features = in_features * 2
         for _ in range(2):
-            model += [nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
+            model += [nn.Conv2d(in_features, out_features, ks2, stride=2, padding=1),
                       nn.InstanceNorm2d(out_features),
                       nn.ReLU(inplace=True)]
             in_features = out_features
             out_features = in_features * 2
 
         # Residual blocks
-        for _ in range(n_residual_blocks):
+        for _ in range(n_res_blocks):
             model += [ResidualBlock(in_features)]
 
         # Upsampling
         out_features = in_features // 2
         for _ in range(2):
-            model += [nn.ConvTranspose2d(in_features, out_features, 3, stride=2,
+            model += [nn.ConvTranspose2d(in_features, out_features, ks2, stride=2,
                                          padding=1, output_padding=1),
                       nn.InstanceNorm2d(out_features),
                       nn.ReLU(inplace=True)]
@@ -83,7 +86,7 @@ class Generator(BaseModel):
 
         # Output layer
         model += [nn.ReflectionPad2d(3),
-                  nn.Conv2d(nf, output_nc, ks),
+                  nn.Conv2d(nf, output_nc, ks1),
                   nn.Tanh()]
 
         self.model = nn.Sequential(*model)
@@ -122,7 +125,7 @@ class Discriminator(BaseModel):
         Logging verbosity.
     """
 
-    def __init__(self, input_nc, ks=4, nf=64, nl=5, verbose=0):
+    def __init__(self, input_nc, ks, nf, nl, verbose=0):
         super(Discriminator, self).__init__(verbose=verbose)
 
         # A bunch of convolutions one after another
@@ -168,8 +171,11 @@ class CycleGan:
     gnf : int
         Number of features in last generator conv. layer.
 
-    gks : int
-        Generator's conv. kernel size.
+    gks1 : int
+        Generator's outer layer conv. kernel size.
+
+    gks2 : int
+        Generator's inner layer conv. kernel size.
 
     dnf : int
         Number of features in first discriminator conv. layer.
@@ -196,15 +202,15 @@ class CycleGan:
     @property
     def D_B(self): return self.netD_B
 
-    def __init__(self, input_nc, output_nc, gnf, gks, dnf, dnl, dks, img_size, verbose):
+    def __init__(self, input_nc, output_nc, gnf, gks1, gks2, dnf, dnl, dks, img_size, verbose):
         self.input_nc = input_nc
         self.output_nc = output_nc
         self.img_size = img_size
 
-        self.netG_A2B = GeneratorA2B(input_nc, output_nc, ks=gks, nf=gnf, verbose=verbose)
-        self.netG_B2A = GeneratorB2A(output_nc, input_nc, ks=gks, nf=gnf, verbose=verbose)
-        self.netD_A = DiscriminatorA(input_nc, ks=dks, nf=dnf, nl=dnl, verbose=verbose)
-        self.netD_B = DiscriminatorB(output_nc, ks=dks, nf=dnf, nl=dnl, verbose=verbose)
+        self.netG_A2B = GeneratorA2B(input_nc, output_nc, gks1, gks2, gnf, verbose=verbose)
+        self.netG_B2A = GeneratorB2A(output_nc, input_nc, gks1, gks2, gnf, verbose=verbose)
+        self.netD_A = DiscriminatorA(input_nc, dks, dnf, dnl, verbose=verbose)
+        self.netD_B = DiscriminatorB(output_nc, dks, dnf, dnl, verbose=verbose)
 
         self.netG_A2B.apply(weights_init_normal)
         self.netG_B2A.apply(weights_init_normal)
