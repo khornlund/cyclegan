@@ -26,6 +26,28 @@ class ResidualBlock(BaseModel):
 
 
 class Generator(BaseModel):
+    """
+    Parameters
+    ----------
+    input_nc : int
+        Number of input channels
+
+    output_nc : int
+        Number of output channels
+
+    ks : int
+        Convolutional kernel size.
+
+    nf : int
+        Number of features in last convolutional layer.
+
+    n_residual_blocks : int
+        Number of :class:`ResidualBlock`s in the middle of network.
+
+    verbose : int
+        Logging verbosity.
+    """
+
     def __init__(self, input_nc, output_nc, ks=7, nf=64, n_residual_blocks=9, verbose=0):
         super(Generator, self).__init__(verbose=verbose)
 
@@ -133,7 +155,34 @@ class DiscriminatorB(Discriminator):
 
 
 class CycleGan:
-    """Container for Generators and Discriminators"""
+    """Container for Generators and Discriminators.
+
+    Parameters
+    ----------
+    input_nc : int
+        Number of input channels.
+
+    output_nc : int
+        Number of output channels.
+
+    gnf : int
+        Number of features in last generator conv. layer.
+
+    gks : int
+        Generator's conv. kernel size.
+
+    dnf : int
+        Number of features in first discriminator conv. layer.
+
+    dnl : int
+        Number of conv. layers in discriminator.
+
+    dks : int
+        Discriminators conv. kernel size.
+
+    img_size : int
+        Size of images. Assumed to be square.
+    """
 
     @property
     def G_A2B(self): return self.netG_A2B
