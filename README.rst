@@ -67,7 +67,8 @@ Usage
 .. code-block:: bash
 
   $ cd path/to/repo
-  $ conda create --name <name> python=3.6
+  $ conda create --name cyclegan python=3.6
+  $ conda activate cyclegan
   $ pip install -e .
   $ conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
   $ cyclegan train -c experiments/config.yaml
