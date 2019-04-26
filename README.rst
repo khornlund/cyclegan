@@ -154,7 +154,7 @@ Specify indices of available GPUs by cuda environmental variable.
 
 .. code-block:: shell
 
-  cyclegan train --device 2,3 -c experiments/config.yaml
+  cyclegan train --device 2,3 --config experiments/config.yaml
 
 Testing
 -------
