@@ -143,7 +143,7 @@ You can resume from a previously saved checkpoint by:
 
 .. code-block:: shell
 
-  cyclegan test --resume path/to/checkpoint
+  cyclegan train --resume path/to/checkpoint
 
 
 Using Multiple GPU
@@ -158,8 +158,11 @@ Specify indices of available GPUs by cuda environmental variable.
 
 Testing
 -------
-You can test trained model by running `test.py` passing path to the trained checkpoint by `--resume`
-argument.
+You can test trained model by running:
+
+.. code-block:: shell
+
+  cyclegan test --config experiments/config.yaml --resume path/to/checkpoint
 
 
 TensorboardX Visualization
