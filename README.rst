@@ -135,7 +135,7 @@ Modify the configurations in `.yaml` config files, then run:
 
 .. code-block:: shell
 
-  python train.py --config experiments/config.yaml
+  cyclegan train --config experiments/config.yaml
 
 Resuming from checkpoints
 -------------------------
@@ -143,7 +143,7 @@ You can resume from a previously saved checkpoint by:
 
 .. code-block:: shell
 
-  python train.py --resume path/to/checkpoint
+  cyclegan test --resume path/to/checkpoint
 
 
 Using Multiple GPU
@@ -154,14 +154,7 @@ Specify indices of available GPUs by cuda environmental variable.
 
 .. code-block:: shell
 
-  python train.py --device 2,3 -c experiments/config.yaml
-
-This is equivalent to
-
-.. code-block:: shell
-
-  CUDA_VISIBLE_DEVICES=2,3 python train.py -c config.py
-
+  cyclegan train --device 2,3 -c experiments/config.yaml
 
 Testing
 -------
